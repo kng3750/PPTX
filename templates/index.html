@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPTX 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-box.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            color: #2e7d32;
+            font-weight: 500;
+            display: none;
+        }
+
+        .file-info.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            color: #2e7d32;
+            text-align: center;
+        }
+
+        .download-btn {
+            background: #4caf50;
+            margin-top: 15px;
+        }
+
+        .download-btn:hover {
+            background: #45a049;
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .error-message {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #ffebee;
+            border-radius: 10px;
+            color: #c62828;
+            text-align: center;
+        }
+
+        .page-select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-select:hover {
+            border-color: #764ba2;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .page-select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 PPTX 생성기</h1>
+        <p class="subtitle">문서와 템플릿을 업로드하여 프레젠테이션을 자동으로 생성하세요</p>
+
+        <form id="uploadForm">
+            <div class="upload-section">
+                <label for="documentFile">
+                    <div class="upload-box" id="documentBox">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">문서 파일 업로드</div>
+                        <div class="upload-hint">PDF, DOCX, TXT 파일 지원</div>
+                        <div class="file-info" id="documentInfo"></div>
+                    </div>
+                </label>
+                <input type="file" id="documentFile" name="document" accept=".pdf,.docx,.txt" required>
+            </div>
+
+            <div class="upload-section">
+                <label for="templateFile">
+                    <div class="upload-box" id="templateBox">
+                        <div class="upload-icon">🎨</div>
+                        <div class="upload-text">PPTX 템플릿 업로드</div>
+                        <div class="upload-hint">PPTX 파일만 지원</div>
+                        <div class="file-info" id="templateInfo"></div>
+                    </div>
+                </label>
+                <input type="file" id="templateFile" name="template" accept=".pptx" required>
+            </div>
+
+            <div class="upload-section">
+                <label for="pageCount" style="display: block; margin-bottom: 10px; color: #333; font-weight: 600; font-size: 1.1em;">
+                    생성할 페이지 수 선택
+                </label>
+                <select id="pageCount" name="pageCount" class="page-select" required>
+                    <option value="">페이지 수를 선택하세요</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn" id="generateBtn">PPTX 생성하기</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>PPTX 파일을 생성하는 중...</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <p>✅ PPTX 파일이 성공적으로 생성되었습니다!</p>
+            <button class="btn download-btn" id="downloadBtn">다운로드</button>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <script>
+        const documentFile = document.getElementById('documentFile');
+        const templateFile = document.getElementById('templateFile');
+        const documentBox = document.getElementById('documentBox');
+        const templateBox = document.getElementById('templateBox');
+        const documentInfo = document.getElementById('documentInfo');
+        const templateInfo = document.getElementById('templateInfo');
+        const uploadForm = document.getElementById('uploadForm');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const pageCountSelect = document.getElementById('pageCount');
+
+        let generatedFilename = '';
+
+        // 페이지 수 선택 옵션 생성 (10~40)
+        for (let i = 10; i <= 40; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `${i}페이지`;
+            pageCountSelect.appendChild(option);
+        }
+
+        // 파일 선택 시 정보 표시
+        documentFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                documentInfo.textContent = `선택된 파일: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                documentInfo.style.display = 'block';
+                documentInfo.classList.remove('error');
+            }
+        });
+
+        templateFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                templateInfo.textContent = `선택된 파일: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                templateInfo.style.display = 'block';
+                templateInfo.classList.remove('error');
+            }
+        });
+
+        // 드래그 앤 드롭 기능
+        [documentBox, templateBox].forEach((box, index) => {
+            const input = index === 0 ? documentFile : templateFile;
+            const info = index === 0 ? documentInfo : templateInfo;
+
+            box.addEventListener('click', () => input.click());
+
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                box.classList.add('dragover');
+            });
+
+            box.addEventListener('dragleave', () => {
+                box.classList.remove('dragover');
+            });
+
+            box.addEventListener('drop', (e) => {
+                e.preventDefault();
+                box.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    const allowedTypes = index === 0 
+                        ? ['.pdf', '.docx', '.txt']
+                        : ['.pptx'];
+                    
+                    const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+                    
+                    if (allowedTypes.includes(fileExt)) {
+                        input.files = files;
+                        info.textContent = `선택된 파일: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                        info.style.display = 'block';
+                        info.classList.remove('error');
+                    } else {
+                        info.textContent = `지원하지 않는 파일 형식입니다. ${allowedTypes.join(', ')} 파일만 업로드 가능합니다.`;
+                        info.style.display = 'block';
+                        info.classList.add('error');
+                    }
+                }
+            });
+        });
+
+        // 폼 제출
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!documentFile.files[0] || !templateFile.files[0]) {
+                showError('문서 파일과 템플릿 파일을 모두 선택해주세요.');
+                return;
+            }
+
+            const selectedPageCount = pageCountSelect.value;
+            if (!selectedPageCount) {
+                showError('생성할 페이지 수를 선택해주세요.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('document', documentFile.files[0]);
+            formData.append('template', templateFile.files[0]);
+            formData.append('pageCount', selectedPageCount);
+
+            // UI 업데이트
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    generatedFilename = data.filename;
+                    successMessage.style.display = 'block';
+                    downloadBtn.onclick = () => {
+                        window.location.href = `/download/${generatedFilename}`;
+                    };
+                } else {
+                    showError(data.error || 'PPTX 생성 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                showError('서버와 통신하는 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                generateBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
