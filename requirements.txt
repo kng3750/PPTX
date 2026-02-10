@@ -1,5 +1,0 @@
-flask
-python-pptx
-PyPDF2
-python-docx
-werkzeug
