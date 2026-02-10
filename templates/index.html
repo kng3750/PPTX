@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPTX 템플릿 · 문서 삽입</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1419;
+            --surface: #1a2332;
+            --surface-hover: #232f42;
+            --border: #2d3a4f;
+            --text: #e6edf3;
+            --text-muted: #8b9eb0;
+            --accent: #58a6ff;
+            --accent-dim: #1f6feb;
+            --success: #3fb950;
+            --error: #f85149;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .page {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .upload-form {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .upload-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .upload-group:last-of-type {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .upload-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .upload-text strong {
+            color: var(--text);
+        }
+
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 1.75rem;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: white;
+            background: var(--accent-dim);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.99);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .hint {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(88, 166, 255, 0.08);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .hint ul {
+            margin-top: 0.5rem;
+            padding-left: 1.25rem;
+        }
+
+        .hint li {
+            margin-bottom: 0.25rem;
+        }
+
+        .error-msg {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(248, 81, 73, 0.15);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--error);
+            display: none;
+        }
+
+        .error-msg.visible {
+            display: block;
+        }
+
+        .page-select-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .page-select-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .page-select-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .page-select-btn {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            font-family: inherit;
+            color: var(--accent);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .page-select-btn:hover {
+            background: rgba(88, 166, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .page-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 0.5rem;
+        }
+
+        .page-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .page-checkbox-item input {
+            width: 1.1em;
+            height: 1.1em;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .page-checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <h1>PPTX 템플릿 · 문서 삽입</h1>
+            <p class="subtitle">템플릿의 배경과 머릿말은 그대로 두고, 본문에만 문서 내용을 넣습니다.</p>
+        </header>
+
+        <form class="upload-form" id="uploadForm">
+            <div class="upload-group">
+                <label>PPTX 템플릿 (1장)</label>
+                <div class="upload-zone" id="templateZone" data-input="template">
+                    <input type="file" name="template" id="template" accept=".pptx" required>
+                    <div class="upload-icon">📑</div>
+                    <div class="upload-text"><strong>.pptx</strong> 파일을 선택하세요</div>
+                    <div class="file-name" id="templateName"></div>
+                </div>
+            </div>
+
+            <div class="upload-group">
+                <label>문서 파일</label>
+                <div class="upload-zone" id="documentZone" data-input="document">
+                    <input type="file" name="document" id="document" accept=".txt,.docx,.doc" required>
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text"><strong>.txt</strong>, <strong>.docx</strong>, <strong>.doc</strong> 지원</div>
+                    <div class="file-name" id="documentName"></div>
+                </div>
+            </div>
+
+            <div class="upload-group page-select-group">
+                <div class="page-select-header">
+                    <label>페이지 선택 (1–40)</label>
+                    <div class="page-select-btns">
+                        <button type="button" class="page-select-btn" id="selectAllBtn">전체 선택</button>
+                        <button type="button" class="page-select-btn" id="deselectAllBtn">전체 해제</button>
+                    </div>
+                </div>
+                <div class="page-checkbox-grid" id="pageCheckboxGrid"></div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">결과 PPTX 생성</button>
+        </form>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="hint">
+            <strong>사용 방법</strong>
+            <ul>
+                <li>선택한 페이지 수만큼 슬라이드가 생성되며, 문서 내용이 균등 분할됩니다.</li>
+                <li>템플릿 슬라이드에 본문용 placeholder(텍스트 상자)가 있어야 합니다.</li>
+                <li>배경색, 타이틀/머릿말은 유지되고, 본문 텍스트는 중앙 정렬됩니다.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const templateInput = document.getElementById('template');
+        const documentInput = document.getElementById('document');
+        const templateZone = document.getElementById('templateZone');
+        const documentZone = document.getElementById('documentZone');
+        const templateName = document.getElementById('templateName');
+        const documentName = document.getElementById('documentName');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMsg = document.getElementById('errorMsg');
+
+        function setupZone(zone, input, nameEl) {
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) input.files = e.dataTransfer.files;
+                nameEl.textContent = e.dataTransfer.files[0]?.name || '';
+            });
+            input.addEventListener('change', () => {
+                nameEl.textContent = input.files[0]?.name || '';
+            });
+        }
+
+        setupZone(templateZone, templateInput, templateName);
+        setupZone(documentZone, documentInput, documentName);
+
+        // 페이지 체크박스 1-40 생성
+        const pageCheckboxGrid = document.getElementById('pageCheckboxGrid');
+        for (let i = 1; i <= 40; i++) {
+            const item = document.createElement('div');
+            item.className = 'page-checkbox-item';
+            item.innerHTML = `
+                <input type="checkbox" name="pages" id="page${i}" value="${i}">
+                <label for="page${i}">${i}</label>
+            `;
+            pageCheckboxGrid.appendChild(item);
+        }
+
+        document.getElementById('selectAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('input[name="pages"]').forEach(cb => cb.checked = true);
+        });
+        document.getElementById('deselectAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('input[name="pages"]').forEach(cb => cb.checked = false);
+        });
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.add('visible');
+        }
+
+        function hideError() {
+            errorMsg.classList.remove('visible');
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError();
+            submitBtn.disabled = true;
+            submitBtn.textContent = '처리 중...';
+
+            const formData = new FormData(form);
+
+            try {
+                const res = await fetch('/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const contentType = res.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await res.json();
+                    showError(data.error || '오류가 발생했습니다.');
+                    return;
+                }
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'result.pptx';
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                showError('네트워크 오류가 발생했습니다. 다시 시도해 주세요.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '결과 PPTX 생성';
+            }
+        });
+    </script>
+</body>
+</html>
